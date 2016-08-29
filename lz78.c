@@ -262,7 +262,7 @@ int lz78_compressor(const char* inputfilename, const char* outputfilename) {
 	parent_node = ROOT_ID;
 	previous_parent_node = ROOT_ID;
 
-	while(bitio_read(bitio_inputfile,8,&buff,0) != -1) 
+	while(bitio_read(bitio_inputfile,8,&buff) != -1) 
 	{			
 				//printf("Letto:");
 				//printf("%"PRIu64"\n",buff);
@@ -278,6 +278,8 @@ int lz78_compressor(const char* inputfilename, const char* outputfilename) {
 					//printf("%"PRIu64"\n",(uint64_t)parent_node);
 					if(parent_node >= DICTIONARY_SIZE)
 						printf("WARNING!!!");	
+					//printf("Scritto:");
+					//printf("%"PRIu64"\n",(uint64_t)parent_node);
 					bitio_write(bitio_outputfile,16,(uint64_t)parent_node);
 					parent_node = ROOT_ID;
 					previous_parent_node = ROOT_ID;
@@ -382,7 +384,6 @@ int emit_decoding(struct bit_io* output, struct decompressor_entry* dictionary, 
 		}
 
 		//printf( "\nLunghezza: %d - Scrivo: %c\n", i+1, (char)buffer );												/*_______________________controllo scrittura decodifica*/
-
 	}
 	
 	return 0;
@@ -450,23 +451,21 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 		printf( "Error opening %s: %s\n", outputfilename, strerror( errno ) );
 		return -1;
 	}
-	
+
 	/*handling first dictionary access*/
-	ret = bitio_read(input,16, &buffer,1);
-	//printf("\nLeggo BUFFER: %"PRIu64, buffer);
+	ret = bitio_read(input,16, &buffer);
 	if(ret < 0)
 	{
 		printf( "Error bitio_read: %s\n", strerror( errno ) );
 		return -1;
 	}
 	current_node = (uint16_t)buffer;
-	//printf("\nCURRENT NODE: %"PRIu16, current_node);
 
 	emit_decoding(output, dictionary, current_node, decode_buffer);
 	
 	previous_node = current_node;
 	
-	ret = bitio_read(input, 16, &buffer,1);
+	ret = bitio_read(input, 16, &buffer);
 	if(ret < 0)
 	{
 		printf( "Error bitio_read: %s\n", strerror( errno ) );
@@ -474,13 +473,17 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 	}
 	current_node = (uint16_t)buffer;
 
+	
 	/*from the second index in the compressed file*/
 	while(current_node != ROOT)																/*TESTARE CONDIZIONE DI USCITA! ROOT == EOF*/
 	{
+	
+		//printf("\n\nADD: letto current_node -> %"PRIu16" counter -> %"PRIu16"\n",  current_node, counter);
+	
 		/*adding new node (entry in the dictionary) to the previous node*/
 		dictionary[counter].father = previous_node;
 		dictionary[counter].symbol = get_root_child_symbol(dictionary, current_node);
-		
+
 		/*emitting the decoding*/
 		ret = emit_decoding(output, dictionary, current_node, decode_buffer);
 		if(ret != 0)
@@ -490,14 +493,15 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 		}
 		
 		counter++;
+
 		/*checking if dictionary is full*/
 		if(counter >= DICTIONARY_SIZE)
 		{
-			//printf("passo");
+
 			init_decompressor_dictionary(dictionary);
 						
 			/*handling first dictionary access*/
-			ret = bitio_read(input, 16, &buffer,1);
+			ret = bitio_read(input, 16, &buffer);
 			if(ret < 0)
 			{
 				printf( "Error bitio_read: %s\n", strerror( errno ) );
@@ -508,12 +512,12 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 			
 			emit_decoding(output, dictionary, current_node, decode_buffer);
 		}
+
 		previous_node = current_node;
-		
-		//printf("\nCURRENT NODE: %"PRIu16, current_node);
+
 		/*reading next node*/
 		buffer = 0;
-		ret = bitio_read(input, 16, &buffer,1);
+		ret = bitio_read(input, 16, &buffer);
 		if(current_node >= DICTIONARY_SIZE)
 		printf("\nLeggo BUFFER: %"PRIu64, buffer);
 		if(ret < 0)
@@ -522,10 +526,14 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 			return -1;
 		}
 		current_node = (uint16_t)buffer;	
+
 		if(current_node >= DICTIONARY_SIZE)
 			printf("error");
 /* ______________________________________________________________________________________________________________________________________test*/	
 		/*printf("\nLeggo: %"PRIu16, current_node);
+
+		
+/* ______________________________________________________________________________________________________________________________________test
 
 		if(current_node == ROOT)
 		{	
@@ -535,9 +543,12 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 			for(i=257; i<counter; i++)
 			printf("\n%d)\t%c\tfather:%d\n", i, dictionary[i].symbol, dictionary[i].father);
 			break;
-		}*/
-/* ____________________________________________________________________________________________________________________________________fine test*/	
+
+		}
+ ____________________________________________________________________________________________________________________________________fine test*/	
+
 	}
+	
 
 	/*closing bit_io structures*/
 	ret = bitio_close(input);
@@ -554,11 +565,11 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 	}
 	
 	/*deallocating memory*/	
-	//bzero(decode_buffer, DICTIONARY_SIZE*sizeof(*decode_buffer));
-	//free(decode_buffer);
+	bzero(decode_buffer, DICTIONARY_SIZE*sizeof(*decode_buffer));
+	free(decode_buffer);
 	
-	//bzero(dictionary, DICTIONARY_SIZE*sizeof(*dictionary));
-	//free(dictionary);
+	bzero(dictionary, DICTIONARY_SIZE*sizeof(*dictionary));
+	free(dictionary);
 	
 	return 0;
 }

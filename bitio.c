@@ -57,8 +57,7 @@ int bitio_close (struct bit_io* b)
 	if(b->mode == 1 && b->wp != 0) 
 	{
 		if(fwrite(&b->data,1,((b->wp)+7)/8,b->f) != (b->wp+7)/8 )
-			ret = -1;
-			
+			ret = -1;			
 	}	
 	
 	fclose(b->f);
@@ -85,12 +84,11 @@ int bitio_write(struct bit_io* b, uint size, uint64_t data)
 	/*clear the higher part of the variable data */
 	data &= ((1UL << size) -1); 
 
-	/*shift data of wp position & copy into b->data */
-	//b->data |= data << b->wp;
 	/* there's enough space for the new block in the buffer */
 	if(size <=  space) 
-	{	
-		b->data |= data << b->wp;
+	{
+		/*shift data of wp position & copy into b->data */
+		b->data |= data << b->wp; 
 		b->wp += size;
 	} 
 	else 
@@ -106,7 +104,8 @@ int bitio_write(struct bit_io* b, uint size, uint64_t data)
 		{	
 			errno = ENOSPC;
 			return -1;	
-		}	
+		}
+
 		/*fill the buffer b->data with the the bits which did not fit the first time */
 		b->data = data >> space;	
 		b->wp = size - space;		
@@ -115,7 +114,7 @@ int bitio_write(struct bit_io* b, uint size, uint64_t data)
 	return 0;
 }
 
-int bitio_read(struct bit_io* b, uint max_size, uint64_t * result, uint8_t type) 
+int bitio_read(struct bit_io* b, uint max_size, uint64_t * result) 
 {
 	uint space;
 	int ret;
@@ -141,13 +140,8 @@ int bitio_read(struct bit_io* b, uint max_size, uint64_t * result, uint8_t type)
 	}
 	else
 	{
-		*result^=*result;
 		*result = (b->data >> b->rp);
-		if(type == 0)
 		ret = fread(&b->data,1,8,b->f);
-		else
-		ret = fread(&b->data,1,2,b->f);
-
 		if(ret <= 0) 
 		{
 			errno = ENODATA;
@@ -172,6 +166,7 @@ int bitio_read(struct bit_io* b, uint max_size, uint64_t * result, uint8_t type)
 			/*need to clear extra bits copied in the previous operation (max_size)*/
 			*result &= ((1UL << max_size) - 1); 
 			//printf("\ndopo 3 result: %"PRIu64, *result);
+
 			b->rp = max_size - space;
 			return max_size;
 		}
@@ -180,8 +175,6 @@ int bitio_read(struct bit_io* b, uint max_size, uint64_t * result, uint8_t type)
 		/*need to clear extra bits copied in the previous operation (space + b->wp)*/
 		*result &= ((1UL << (b->wp + space)) - 1); 
 		b->rp = b->wp; 
-		return b->wp + space;	
-
-			
+		return b->wp + space;			
 	}
 }
