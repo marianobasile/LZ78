@@ -278,8 +278,8 @@ int lz78_compressor(const char* inputfilename, const char* outputfilename) {
 					//printf("%"PRIu64"\n",(uint64_t)parent_node);
 					if(parent_node >= DICTIONARY_SIZE)
 						printf("WARNING!!!");	
-					//printf("Scritto:");
-					//printf("%"PRIu64"\n",(uint64_t)parent_node);
+					printf("Scritto:");
+					printf("%"PRIu16"\n",parent_node);
 					bitio_write(bitio_outputfile,16,(uint64_t)parent_node);
 					parent_node = ROOT_ID;
 					previous_parent_node = ROOT_ID;
@@ -409,7 +409,7 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 
 
 	int ret;
-	uint16_t previous_node;			/*the previous dictionary entry read from the compressed file*/
+	uint32_t previous_node;			/*the previous dictionary entry read from the compressed file*/
 	uint16_t current_node;			/*the current dictionary entry read from the compressed file*/
 	uint64_t buffer;				/*to store the bitio_read data*/
 	
@@ -479,7 +479,8 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 	{
 	
 		//printf("\n\nADD: letto current_node -> %"PRIu16" counter -> %"PRIu16"\n",  current_node, counter);
-	
+		printf("Scritto:");
+		printf("%"PRIu32"\n",current_node);
 		/*adding new node (entry in the dictionary) to the previous node*/
 		dictionary[counter].father = previous_node;
 		dictionary[counter].symbol = get_root_child_symbol(dictionary, current_node);
@@ -508,7 +509,7 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 				return -1;
 			}
 			
-			current_node = (uint16_t)buffer;
+			current_node = (uint32_t)buffer;
 			
 			emit_decoding(output, dictionary, current_node, decode_buffer);
 		}
@@ -518,22 +519,21 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 		/*reading next node*/
 		buffer = 0;
 		ret = bitio_read(input, 16, &buffer);
+
 		if(current_node >= DICTIONARY_SIZE)
 		printf("\nLeggo BUFFER: %"PRIu64, buffer);
+	
 		if(ret < 0)
 		{
 			printf( "\nError bitio_read: %s\n", strerror( errno ) );
 			return -1;
 		}
-		current_node = (uint16_t)buffer;	
+		current_node = (uint32_t)buffer;	
 
 		if(current_node >= DICTIONARY_SIZE)
 			printf("error");
 /* ______________________________________________________________________________________________________________________________________test*/	
 		/*printf("\nLeggo: %"PRIu16, current_node);
-
-		
-/* ______________________________________________________________________________________________________________________________________test
 
 		if(current_node == ROOT)
 		{	

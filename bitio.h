@@ -22,7 +22,7 @@ int bitio_write(struct bit_io*, uint size, uint64_t data);
 - returns the  number of bits that have been read.
 	=== bitio_read ===
 */
-int bitio_read(struct bit_io*, uint max_size, uint64_t * result, uint8_t type);
+int bitio_read(struct bit_io*, uint max_size, uint64_t * result);
 
 /* 	=== bitio_open ===
 - allocates the bit_io data structure;
