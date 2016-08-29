@@ -86,17 +86,23 @@ int bitio_write(struct bit_io* b, uint size, uint64_t data)
 	data &= ((1UL << size) -1); 
 
 	/*shift data of wp position & copy into b->data */
-	b->data |= data << b->wp; 
-
+	//b->data |= data << b->wp;
 	/* there's enough space for the new block in the buffer */
 	if(size <=  space) 
-	{
+	{	
+		b->data |= data << b->wp;
 		b->wp += size;
 	} 
 	else 
 	{	
+		//printf("space: %lu",(1UL<<space)-1);
+		//printf("\ndata: %"PRIu64, ();
+		//printf("\nb->data prima: %"PRIu64, data&((1UL<<space)-1));
+		//(data&((1UL<<space)-1));
+		//b->data |= (data&((1UL<<space)-1))<< b->wp; 
+		//printf("\nb->data dopo: %"PRIu64, b->data);
 		//printf("%"PRIu64"\n",b->data);	
-		if(fwrite(&(b->data),8,1,b->f) <= 0 ) 
+		if(fwrite(&(b->data),1,8,b->f) <= 0 ) 
 		{	
 			errno = ENOSPC;
 			return -1;	
@@ -109,7 +115,7 @@ int bitio_write(struct bit_io* b, uint size, uint64_t data)
 	return 0;
 }
 
-int bitio_read(struct bit_io* b, uint max_size, uint64_t * result) 
+int bitio_read(struct bit_io* b, uint max_size, uint64_t * result, uint8_t type) 
 {
 	uint space;
 	int ret;
@@ -135,8 +141,13 @@ int bitio_read(struct bit_io* b, uint max_size, uint64_t * result)
 	}
 	else
 	{
+		*result^=*result;
 		*result = (b->data >> b->rp);
+		if(type == 0)
 		ret = fread(&b->data,1,8,b->f);
+		else
+		ret = fread(&b->data,1,2,b->f);
+
 		if(ret <= 0) 
 		{
 			errno = ENODATA;
@@ -151,16 +162,16 @@ int bitio_read(struct bit_io* b, uint max_size, uint64_t * result)
 		/* At this point we need to copy the remaining chunk of the data (max_size - space) */
 		/* We may have read from the file less than (max_size - space) bits */
 		if(b->wp >= max_size - space) 
-		{	printf("\nLeggo result: %"PRIu64, *result);
+		{	//printf("\nLeggo result: %"PRIu64, *result);
 			*result^=*result;
-			printf("\ndopo result: %"PRIu64, *result);
+			//printf("\ndopo result: %"PRIu64, *result);
 
-			printf("\ndopo 2 result: %"PRIu64, b->data);
+			//printf("\ndopo 2 result: %"PRIu16, (uint16_t)b->data);
 			*result |= b->data << space;
-			printf("\ndopo 2 result after: %"PRIu64, *result);
+			//printf("\ndopo 2 result after: %"PRIu64, *result);
 			/*need to clear extra bits copied in the previous operation (max_size)*/
 			*result &= ((1UL << max_size) - 1); 
-			printf("\ndopo 3 result: %"PRIu64, *result);
+			//printf("\ndopo 3 result: %"PRIu64, *result);
 			b->rp = max_size - space;
 			return max_size;
 		}

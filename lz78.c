@@ -12,10 +12,10 @@ struct hash_entry *hash_table[DICTIONARY_SIZE];
 const uint16_t ROOT_ID = 0;
 uint16_t parent_node;
 uint16_t previous_parent_node;
-uint16_t node_id;
+uint32_t node_id;
 
 /*the global counter*/
-uint16_t counter;
+uint32_t counter;
 
 void hash_init() 
 {
@@ -97,17 +97,25 @@ void print_hash_table()
 
 	int i;
 
-	for(i=0; i < DICTIONARY_SIZE; i++)
+	for(i=0; i < 300; i++)
 	{
 		printf("\nENTRY:%d",i);
-		printf("\tPARENT:%d",hash_table[i]->parent);
-		printf("\t:NODE:%d",hash_table[i]->index);	
+
+		printf("\tPARENT: ");
+		printf("%"PRIu16,hash_table[i]->parent);
+
+		printf("\tINDEX: ");
+		printf("%"PRIu16,hash_table[i]->index);
+
+		if(hash_table[i]->next == NULL) 
+			printf("\tNEXT: VUOTO");	
 	}
 	printf("\n");
 }
 
 int hash_is_not_full() 
 {
+
 	return (node_id <= DICTIONARY_SIZE -1) ? 0 : 1;
 }
 
@@ -115,16 +123,18 @@ void collision_list_destroy()
 {
 	int i;
 	struct hash_entry* temp;
+	struct hash_entry* app;
 
 	for(i=0; i < DICTIONARY_SIZE; i++)
 	{
 		temp = hash_table[i];
-		hash_table[i] = hash_table[i] -> next;
+		app = hash_table[i] -> next;
+		hash_table[i] -> next = NULL;
 
-		while(hash_table[i] != NULL)
+		while(app != NULL)
 		{
-			temp = hash_table[i];
-			hash_table[i] = hash_table[i] -> next;
+			temp = app;
+			app = app -> next;
 			free(temp);
 		}
 
@@ -133,10 +143,26 @@ void collision_list_destroy()
 
 void rebuild_hash_table() 
 {
-	node_id = 0;
 	collision_list_destroy();
 	hash_init();
+	//print_hash_table();
 	generate_root_childs();
+	//print_hash_table();
+}
+void verify_outside_range() {
+	printf("\nVerifica outside range in corso....");
+	int i,j;
+	j=0;
+	for(i=0; i < DICTIONARY_SIZE; i++)
+	{
+		if(hash_table[i] -> index >= DICTIONARY_SIZE){
+			j=1;
+			printf("ERRORE!!");
+		}
+	}
+
+	if(j==0)
+		printf("TUTTO OK!!\n");
 }
 
 uint16_t check_for_free_entry_and_add(uint16_t position, uint16_t parent, uint64_t insertion_place) 
@@ -146,10 +172,15 @@ uint16_t check_for_free_entry_and_add(uint16_t position, uint16_t parent, uint64
 		hash_insertion(position,parent,node_id);
 		node_id++;
 	}
-	else if(hash_is_not_full() == 0 && insertion_place == COLLISION_LIST)
-		insert_in_collision_list(hash_table[position],parent);
+	else if(hash_is_not_full() == 0 && insertion_place == COLLISION_LIST) 
+		insert_in_collision_list(hash_table[position],parent);		
 	else
+	{
+		verify_outside_range();
+		node_id = 0;
 		rebuild_hash_table();
+	}
+		
 
 	return parent;
 }
@@ -174,7 +205,7 @@ uint16_t lookup_collision_list(uint16_t position, uint16_t parent)
 
 	if(child_id == 0)
 		return check_for_free_entry_and_add(position, parent, COLLISION_LIST);		//insert new symbhol in the collision list of entry pointed by position	
-														
+
 	return child_id;
 }
 
@@ -192,7 +223,7 @@ uint16_t hash_lookup(uint16_t parent, uint8_t arc_label)
 
 		return lookup_collision_list(position,parent);
 	}
-
+	
 	return check_for_free_entry_and_add(position,parent,HASH_ENTRY);
 }
 
@@ -231,10 +262,10 @@ int lz78_compressor(const char* inputfilename, const char* outputfilename) {
 	parent_node = ROOT_ID;
 	previous_parent_node = ROOT_ID;
 
-	while(bitio_read(bitio_inputfile,8,&buff) != -1) 
+	while(bitio_read(bitio_inputfile,8,&buff,0) != -1) 
 	{			
-				printf("Letto:");
-				printf("%"PRIu64"\n",buff);
+				//printf("Letto:");
+				//printf("%"PRIu64"\n",buff);
 				arc_label = (uint8_t)buff; 
 
 				parent_node = hash_lookup(parent_node, arc_label);
@@ -243,18 +274,21 @@ int lz78_compressor(const char* inputfilename, const char* outputfilename) {
 					previous_parent_node = parent_node;
 				else																		//	new child has been added so we emit
 				{	
-					printf("Scritto:");
-					printf("%"PRIu64"\n",(uint64_t)parent_node);	
+					//printf("Scritto:");
+					//printf("%"PRIu64"\n",(uint64_t)parent_node);
+					if(parent_node >= DICTIONARY_SIZE)
+						printf("WARNING!!!");	
 					bitio_write(bitio_outputfile,16,(uint64_t)parent_node);
 					parent_node = ROOT_ID;
 					previous_parent_node = ROOT_ID;
-					printf("Letto char:");
-					printf("%"PRIu8"\n",arc_label);
+					//printf("Letto char:");
+					//printf("%"PRIu8"\n",arc_label);
 					parent_node = hash_lookup(parent_node, arc_label);
 					goto CHECK;
 				}	 
 	}
 
+	//print_hash_table();
 	const uint64_t END_OF_FILE = 0;
 	bitio_write(bitio_outputfile,16, END_OF_FILE);
 	printf("%"PRIu64"\n",END_OF_FILE);
@@ -294,8 +328,8 @@ void init_decompressor_dictionary(struct decompressor_entry * dictionary)
 	
 	for(i=1; i<257; i++)
 	{		
-			dictionary[i].symbol = i-1;
-			dictionary[i].father = ROOT;
+		dictionary[i].symbol = i-1;
+		dictionary[i].father = ROOT;	
 	}
 
 	counter=257;
@@ -347,7 +381,7 @@ int emit_decoding(struct bit_io* output, struct decompressor_entry* dictionary, 
 			return -1;
 		}
 
-		printf( "\nLunghezza: %d - Scrivo: %c\n", i+1, (char)buffer );												/*_______________________controllo scrittura decodifica*/
+		//printf( "\nLunghezza: %d - Scrivo: %c\n", i+1, (char)buffer );												/*_______________________controllo scrittura decodifica*/
 
 	}
 	
@@ -418,21 +452,21 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 	}
 	
 	/*handling first dictionary access*/
-	ret = bitio_read(input,16, &buffer);
-	printf("\nLeggo BUFFER: %"PRIu64, buffer);
+	ret = bitio_read(input,16, &buffer,1);
+	//printf("\nLeggo BUFFER: %"PRIu64, buffer);
 	if(ret < 0)
 	{
 		printf( "Error bitio_read: %s\n", strerror( errno ) );
 		return -1;
 	}
 	current_node = (uint16_t)buffer;
-	printf("\nCURRENT NODE: %"PRIu16, current_node);
+	//printf("\nCURRENT NODE: %"PRIu16, current_node);
 
 	emit_decoding(output, dictionary, current_node, decode_buffer);
 	
 	previous_node = current_node;
 	
-	ret = bitio_read(input, 16, &buffer);
+	ret = bitio_read(input, 16, &buffer,1);
 	if(ret < 0)
 	{
 		printf( "Error bitio_read: %s\n", strerror( errno ) );
@@ -459,11 +493,11 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 		/*checking if dictionary is full*/
 		if(counter >= DICTIONARY_SIZE)
 		{
-			printf("passo");
+			//printf("passo");
 			init_decompressor_dictionary(dictionary);
 						
 			/*handling first dictionary access*/
-			ret = bitio_read(input, 16, &buffer);
+			ret = bitio_read(input, 16, &buffer,1);
 			if(ret < 0)
 			{
 				printf( "Error bitio_read: %s\n", strerror( errno ) );
@@ -475,10 +509,12 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 			emit_decoding(output, dictionary, current_node, decode_buffer);
 		}
 		previous_node = current_node;
-		printf("\nCURRENT NODE: %"PRIu16, current_node);
+		
+		//printf("\nCURRENT NODE: %"PRIu16, current_node);
 		/*reading next node*/
 		buffer = 0;
-		ret = bitio_read(input, 16, &buffer);
+		ret = bitio_read(input, 16, &buffer,1);
+		if(current_node >= DICTIONARY_SIZE)
 		printf("\nLeggo BUFFER: %"PRIu64, buffer);
 		if(ret < 0)
 		{
@@ -486,9 +522,10 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 			return -1;
 		}
 		current_node = (uint16_t)buffer;	
-		
+		if(current_node >= DICTIONARY_SIZE)
+			printf("error");
 /* ______________________________________________________________________________________________________________________________________test*/	
-		printf("\nLeggo: %"PRIu16, current_node);
+		/*printf("\nLeggo: %"PRIu16, current_node);
 
 		if(current_node == ROOT)
 		{	
@@ -498,7 +535,7 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 			for(i=257; i<counter; i++)
 			printf("\n%d)\t%c\tfather:%d\n", i, dictionary[i].symbol, dictionary[i].father);
 			break;
-		}
+		}*/
 /* ____________________________________________________________________________________________________________________________________fine test*/	
 	}
 
@@ -517,11 +554,11 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 	}
 	
 	/*deallocating memory*/	
-	bzero(decode_buffer, DICTIONARY_SIZE*sizeof(*decode_buffer));
-	free(decode_buffer);
+	//bzero(decode_buffer, DICTIONARY_SIZE*sizeof(*decode_buffer));
+	//free(decode_buffer);
 	
-	bzero(dictionary, DICTIONARY_SIZE*sizeof(*dictionary));
-	free(dictionary);
+	//bzero(dictionary, DICTIONARY_SIZE*sizeof(*dictionary));
+	//free(dictionary);
 	
 	return 0;
 }
