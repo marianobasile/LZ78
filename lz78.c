@@ -59,8 +59,8 @@ void insert_in_collision_list(struct hash_entry* hash_entry, uint16_t parent)
 
 void hash_insertion(uint16_t position, uint16_t parent, uint16_t node_id)
 {
-		hash_table[position] -> parent = parent;
-		hash_table[position] -> index = node_id;
+	hash_table[position] -> parent = parent;
+	hash_table[position] -> index = node_id;
 }
 
 void generate_root_childs() 
@@ -296,7 +296,7 @@ int lz78_compressor(const char* inputfilename, const char* outputfilename)
 
 /*
 	======================================================================================================
-												DECOMPRESSOR
+						DECOMPRESSOR
 	======================================================================================================
 */
 
@@ -415,7 +415,7 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 	int ret;
 	uint32_t previous_node;						/*the previous dictionary entry read from the compressed file*/
 	uint32_t current_node;						/*the current dictionary entry read from the compressed file*/
-	uint64_t buffer;							/*to store the bitio_read data*/
+	uint64_t buffer;						/*to store the bitio_read data*/
 	
 	char * decode_buffer;						/*buffer to decode the symbols encoded in the dictionary entry*/	
 	decode_buffer = (char *)calloc(DICTIONARY_SIZE, sizeof(*decode_buffer));
