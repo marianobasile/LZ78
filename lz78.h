@@ -105,3 +105,5 @@ int emit_decoding(struct bit_io* output, struct decompressor_entry* dictionary, 
 	=== get_root_child_symbol ===
 */
 uint16_t get_root_child_symbol(struct decompressor_entry* dictionary, uint16_t node);
+
+int flush_out_buffer(struct bit_io* b);

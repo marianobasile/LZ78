@@ -55,11 +55,10 @@ int bitio_close (struct bit_io* b)
 	}
 
 	if(b->mode == 1 && b->wp != 0) 
-	{
-		if(fwrite(&b->data,1,((b->wp)+7)/8,b->f) != (b->wp+7)/8 )
+	{	
+		if(fwrite(&(b->data),1,(b->wp+7)/8,b->f) <= 0 )
 			ret = -1;			
 	}	
-	
 	fclose(b->f);
 	bzero(b,sizeof(*b));
 	free(b);
@@ -99,7 +98,7 @@ int bitio_write(struct bit_io* b, uint size, uint64_t data)
 		//(data&((1UL<<space)-1));
 		//b->data |= (data&((1UL<<space)-1))<< b->wp; 
 		//printf("\nb->data dopo: %"PRIu64, b->data);
-		//printf("%"PRIu64"\n",b->data);	
+		printf("%"PRIu64"\n",b->data);	
 		if(fwrite(&(b->data),1,8,b->f) <= 0 ) 
 		{	
 			errno = ENOSPC;
@@ -177,4 +176,22 @@ int bitio_read(struct bit_io* b, uint max_size, uint64_t * result)
 		b->rp = b->wp; 
 		return b->wp + space;			
 	}
+}
+
+int flush_out_buffer(struct bit_io* b) {
+
+int space;
+	space=64-(b->wp);
+	//printf("devo riempire altri %d\n",space);
+	if(space==64)
+		return 0;//buffer empty
+	else{
+		//i need to flush the buffer
+		int ret=fwrite((void*)&b->data,((b->wp)+7)/8,1,b->f);
+		b->wp=0;
+		b->data^=b->data;
+		if(ret<=0)errno=ENOSPC;
+		return ret;
+	}
+	
 }
