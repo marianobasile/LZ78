@@ -1,7 +1,8 @@
 #include "lz78.h"
 #include <inttypes.h>
 
-struct hash_entry {
+struct hash_entry 
+{
 	uint16_t parent;			//Index of the parent node
 	uint16_t index;				//Node index
 	struct hash_entry* next;	//List of entries (because collisions)
@@ -324,10 +325,11 @@ struct decompressor_entry
 void init_decompressor_dictionary(struct decompressor_entry * dictionary)
 {
 	int i;
-	/*initializing the dictionary with the alphabet: the 256 ASCII symbols*/
-	dictionary[0].symbol = ROOT;												/* Node 0 --> ROOT & end the decoding*/
+
+	dictionary[0].symbol = ROOT;				/* Node 0 used to encode ROOT == EOF*/
 	dictionary[0].father = ROOT;
 	
+	/*initializing the dictionary with the alphabet: the 256 ASCII symbols*/	
 	for(i=1; i<257; i++)
 	{		
 		dictionary[i].symbol = i-1;
@@ -365,27 +367,25 @@ int emit_decoding(struct bit_io* output, struct decompressor_entry* dictionary, 
 	
 	struct decompressor_entry* app;
 	app = &dictionary[node];
-			
+	
+	/*creating the decoded sequence*/		
 	do{
 		decode_buffer[length++] = app->symbol;
 		app = &dictionary[app->father];
 	}		
 	while(app->symbol != ROOT);
 	
+	/*emitting the decoded sequence in the reverse order*/
 	for(i=length-1; i>=0; i--)
 	{
 		buffer = (uint64_t)decode_buffer[i];
 
-		//printf("stampo:");
-		//printf("%"PRIu64"\n",buffer);
 		ret = bitio_write(output, 8, buffer);
 		if(ret != 0)
 		{
 			printf( "Error bitio_write: %s\n", strerror( errno ) );
 			return -1;
 		}
-
-		//printf( "\nLunghezza: %d - Scrivo: %c\n", i+1, (char)buffer );												/*_______________________controllo scrittura decodifica*/
 	}
 	
 	return 0;
@@ -398,6 +398,7 @@ uint16_t get_root_child_symbol(struct decompressor_entry* dictionary, uint16_t n
 	struct decompressor_entry* app;
 	app = &dictionary[node];
 	
+	/*searching the root child of a decoded sequence*/
 	while(app->father != ROOT)
 		app = &dictionary[app->father];
 		
@@ -427,12 +428,11 @@ int handle_first_citionary_access(struct bit_io * input, struct bit_io * output,
 int lz78_decompressor(const char* inputfilename, const char* outputfilename) 
 {
 	int ret;
-	uint32_t previous_node;			/*the previous dictionary entry read from the compressed file*/
-	uint32_t current_node;			/*the current dictionary entry read from the compressed file*/
-	uint64_t buffer;				/*to store the bitio_read data*/
+	uint32_t previous_node;						/*the previous dictionary entry read from the compressed file*/
+	uint32_t current_node;						/*the current dictionary entry read from the compressed file*/
+	uint64_t buffer;							/*to store the bitio_read data*/
 	
-	char * decode_buffer;			/*buffer to decode the symbols encoded in the dictionary entry*/
-	
+	char * decode_buffer;						/*buffer to decode the symbols encoded in the dictionary entry*/	
 	decode_buffer = (char *)calloc(DICTIONARY_SIZE, sizeof(*decode_buffer));
 
 	if(decode_buffer == NULL) 
@@ -443,8 +443,7 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 	}
 	
 	/*dictionary creation*/
-	struct decompressor_entry *dictionary;
-		
+	struct decompressor_entry *dictionary;		
 	dictionary = create_decompressor_dictionary();
 	
 	if(dictionary == NULL)
@@ -475,10 +474,10 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 	ret = handle_first_citionary_access(input, output, &buffer, &current_node, dictionary, decode_buffer);
 	if(ret == -1)
 		return ret;
-	
-	/*reading the next node*/		
+			
 	previous_node = current_node;
 	
+	/*reading the next node*/
 	ret = bitio_read(input, 16, &buffer);
 	if(ret < 0)
 	{
@@ -490,12 +489,7 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 	/*from the second index in the compressed file*/
 	while(current_node != ROOT)	
 	{
-	
-		//printf("\n\nADD: letto current_node -> %"PRIu16" counter -> %"PRIu16"\n",  current_node, counter);
-		//printf("LETTO:");
-		//printf("%"PRIu32"\n",current_node);
 		/*adding new node (entry in the dictionary) to the previous node*/
-
 		dictionary[counter].father = previous_node;
 		dictionary[counter].symbol = get_root_child_symbol(dictionary, current_node);
 
@@ -531,9 +525,7 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 			return -1;
 		}
 		current_node = (uint32_t)buffer;
-
 	}
-	
 
 	/*closing bit_io structures*/
 	ret = bitio_close(input);
