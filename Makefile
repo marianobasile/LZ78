@@ -1,6 +1,6 @@
 CC ?= g++
 
-CFLAGS =-Wall -O2
+CFLAGS =-Wall -O2 -Werror
 
 OBJFILES = bitio.o main.o lz78.o
 
