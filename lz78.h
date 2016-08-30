@@ -1,11 +1,11 @@
 #include "bitio.h"
 
-#define DICTIONARY_SIZE		65536		//Dictionary size (64K entries)
+#define DICTIONARY_SIZE			65536			//Dictionary size (64K entries)
 #define ROOT 				0			//ROOT node id			
 #define	READ				0			//Open file in read mode  (bit_io open)
 #define WRITE				1			//Open file in write mode (bit_io open)
-#define COLLISION_LIST		2 			//Insert node in COLLISION LIST
-#define HASH_ENTRY  		3			//Insert node as ENTRY in the HASH TABLE
+#define COLLISION_LIST			2 			//Insert node in COLLISION LIST
+#define HASH_ENTRY  			3			//Insert node as ENTRY in the HASH TABLE
 
 
 struct decompressor_entry;
