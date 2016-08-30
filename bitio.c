@@ -55,11 +55,10 @@ int bitio_close (struct bit_io* b)
 	}
 
 	if(b->mode == 1 && b->wp != 0) 
-	{
-		if(fwrite(&b->data,1,((b->wp)+7)/8,b->f) != (b->wp+7)/8 )
+	{	
+		if(fwrite(&(b->data),1,(b->wp+7)/8,b->f) <= 0 )
 			ret = -1;			
 	}	
-
 
 	fclose(b->f);
 	bzero(b,sizeof(*b));

@@ -360,7 +360,7 @@ struct decompressor_entry * create_decompressor_dictionary()
 int emit_decoding(struct bit_io* output, struct decompressor_entry* dictionary, uint16_t node, char *decode_buffer){
 
 	int i, ret;
-	int length=0;
+	uint16_t length=0;
 	uint64_t buffer;
 	
 	struct decompressor_entry* app;
@@ -376,6 +376,8 @@ int emit_decoding(struct bit_io* output, struct decompressor_entry* dictionary, 
 	{
 		buffer = (uint64_t)decode_buffer[i];
 
+		//printf("stampo:");
+		//printf("%"PRIu64"\n",buffer);
 		ret = bitio_write(output, 8, buffer);
 		if(ret != 0)
 		{
@@ -488,6 +490,12 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 	/*from the second index in the compressed file*/
 	while(current_node != ROOT)	
 	{
+	
+		//printf("\n\nADD: letto current_node -> %"PRIu16" counter -> %"PRIu16"\n",  current_node, counter);
+		//printf("LETTO:");
+		//printf("%"PRIu32"\n",current_node);
+		/*adding new node (entry in the dictionary) to the previous node*/
+
 		dictionary[counter].father = previous_node;
 		dictionary[counter].symbol = get_root_child_symbol(dictionary, current_node);
 
@@ -534,7 +542,7 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 		printf( "Error closing %s: %s\n", inputfilename, strerror( errno ) );
 		return -1;
 	}
-	
+
 	ret = bitio_close(output);
 	if(ret != 0)
 	{
