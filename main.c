@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <inttypes.h>
+#include <time.h>
 #include "lz78.h"
 
 /* Args to run the program */
@@ -72,16 +73,33 @@ int compare_file_size(const char* original, const char* compressed)
 	return original_stat.st_size - compressed_stat.st_size;
 }
 
+
 void check_syntax(struct args* arguments) 
 {
 	if (arguments -> inputfilename == NULL || arguments -> outputfilename == NULL || arguments -> mode == 2)
 		print_error_and_exit();
 }
 
+off_t print_file_size(const char* filename) 
+{
+	struct stat file_stat;
+	stat(filename, &file_stat);
+
+	return file_stat.st_size;
+}
+
 int main(int argc, char* argv[]){
 
 	int option = 0;
 	int ret;
+
+	time_t starting_time;
+	struct tm *s_time;
+	struct timeval start;
+	struct timeval stop;
+	time_t ending_time;
+	struct tm *e_time;
+
 
 	struct args* arguments;
 	arguments = (struct args*) calloc(1, sizeof(struct args));
@@ -137,22 +155,37 @@ int main(int argc, char* argv[]){
 		{
 			/*Starting lz78 Compression algorithm*/
 			printf("\nSTARTING LZ78 COMPRESSION........\n");
+
+			starting_time = time(NULL);
+			s_time = localtime(&starting_time);
+			gettimeofday(&start, NULL);
+
 			if(lz78_compressor(arguments -> inputfilename, arguments -> outputfilename) != 0)
 				printf("./lz78: Error during compression\n\n");
 			else
 			{
+				ending_time = time(NULL);
+				e_time = localtime(&ending_time);
+				gettimeofday(&stop, NULL);
 				ret = compare_file_size(arguments -> inputfilename, arguments -> outputfilename);
-				if( ret >0 )
-					printf("./lz78: Compression terminated\n\n");
+				if( ret >0 ) 
+				{
+					printf("./lz78: Compression terminated\n");
+					
+				}	
 				else
 				{
 					printf("./lz78: Compressed file bigger than the original\n\n");
-					
+
 					/*removing the compressed file created*/
 					ret = remove(arguments -> outputfilename);
+
 					if( ret != 0)
 						printf("\n\nError removing the compressed file: %s\n\n", arguments -> outputfilename);					
 				}
+				printf("./lz78: ORIGINAL SIZE: %ld bytes\n",print_file_size(arguments -> inputfilename));
+				printf("./lz78: COMPRESSED SIZE: %ld bytes\n",print_file_size(arguments -> outputfilename));
+				printf("./lz78: COMPRESSION TIME: %dm:%ds:%ldms\n",s_time->tm_min - e_time->tm_min, s_time->tm_sec - e_time->tm_sec,stop.tv_usec - start.tv_usec);
 			}
 		}
 		else
