@@ -10,21 +10,21 @@ struct hash_entry
 
 /*
 	======================================================================================================
-												COMPRESSOR
+						COMPRESSOR
 	======================================================================================================
 */
 
 struct hash_entry {
-	uint16_t parent;								//Index of the parent node
-	uint16_t index;									//Node index
+	uint16_t parent;							//Index of the parent node
+	uint16_t index;								//Node index
 	struct hash_entry* next;						//List of entries (because collisions)
 };
 
-struct hash_entry *hash_table[DICTIONARY_SIZE];		//DICTIONARY			
+struct hash_entry *hash_table[DICTIONARY_SIZE];					//DICTIONARY			
 uint16_t parent_node;								//Node reached in the tree
-uint16_t previous_parent_node;						//Previous node reached in the tree
-uint32_t node_id;									//Global counter compressor side
-uint32_t counter;									//Global counter decompressor side
+uint16_t previous_parent_node;							//Previous node reached in the tree
+uint32_t node_id;								//Global counter compressor side
+uint32_t counter;								//Global counter decompressor side
 	
 void hash_init() 
 {
