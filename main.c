@@ -10,7 +10,7 @@
 struct args 
 {
 
-	uint8_t mode; 			// 0 Compression -- 1 Decompression
+	uint8_t mode; 		// 0 Compression -- 1 Decompression
 	char* inputfilename;	// Input file 
 	char* outputfilename;	// Output file
 };
