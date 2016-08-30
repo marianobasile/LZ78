@@ -146,7 +146,7 @@ int main(int argc, char* argv[]){
 					printf("./lz78: Compression terminated\n\n");
 				else
 				{
-					printf("./lz78: Compression not usable: compressed file bigger than the origina!\n\n");
+					printf("./lz78: Compressed file bigger than the original\n\n");
 					
 					/*removing the compressed file created*/
 					ret = remove(arguments -> outputfilename);
