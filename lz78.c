@@ -1,13 +1,6 @@
 #include "lz78.h"
 #include <inttypes.h>
 
-struct hash_entry 
-{
-	uint16_t parent;			//Index of the parent node
-	uint16_t index;				//Node index
-	struct hash_entry* next;	//List of entries (because collisions)
-};
-
 /*
 	======================================================================================================
 						COMPRESSOR
