@@ -5,9 +5,6 @@
 #include <stdint.h>
 #include <errno.h>
 
-#define READ 0
-#define WRITE 1
-
 struct bit_io;
 
 /* 	=== bitio_write ===

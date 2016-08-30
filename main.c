@@ -6,7 +6,6 @@
 #include <inttypes.h>
 #include "lz78.h"
 
-
 /* Args to run the program */
 struct args 
 {

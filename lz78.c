@@ -1,22 +1,25 @@
 #include "lz78.h"
 #include <inttypes.h>
 
+
+/*
+	======================================================================================================
+												COMPRESSOR
+	======================================================================================================
+*/
+
 struct hash_entry {
-	uint16_t parent;			//Index of the parent node
-	uint16_t index;				//Node index
-	struct hash_entry* next;	//List of entries (because collisions)
+	uint16_t parent;								//Index of the parent node
+	uint16_t index;									//Node index
+	struct hash_entry* next;						//List of entries (because collisions)
 };
 
-struct hash_entry *hash_table[DICTIONARY_SIZE];
-
-const uint16_t ROOT_ID = 0;
-uint16_t parent_node;
-uint16_t previous_parent_node;
-uint32_t node_id;
-
-/*the global counter*/
-uint32_t counter;
-
+struct hash_entry *hash_table[DICTIONARY_SIZE];		//DICTIONARY			
+uint16_t parent_node;								//Node reached in the tree
+uint16_t previous_parent_node;						//Previous node reached in the tree
+uint32_t node_id;									//Global counter compressor side
+uint32_t counter;									//Global counter decompressor side
+	
 void hash_init() 
 {
 	int i;
@@ -34,7 +37,7 @@ uint16_t compute_hash(uint16_t parent, uint8_t arc_label)
 	return ((((parent << 8) | arc_label)+1) % DICTIONARY_SIZE);
 }
 
-void insert_in_collision_list(struct hash_entry* hash_entry, uint16_t parent)  //collision occurs
+void insert_in_collision_list(struct hash_entry* hash_entry, uint16_t parent)  
 {
 	while(hash_entry -> next != NULL)
 		hash_entry = hash_entry -> next;
@@ -50,7 +53,6 @@ void insert_in_collision_list(struct hash_entry* hash_entry, uint16_t parent)  /
 
 void hash_insertion(uint16_t position, uint16_t parent, uint16_t node_id)
 {
-		//printf("%"PRIu16"\n",node_id);
 		hash_table[position] -> parent = parent;
 		hash_table[position] -> index = node_id;
 }
@@ -59,26 +61,24 @@ void generate_root_childs()
 {
 	uint8_t arc_label = 0x00;
 	uint16_t position;
-	node_id = 1;					//node_id = 0 = ROOT_ID 				
+	node_id = 1;					//node_id = 0 = ROOT 				
 	
-	hash_insertion(0,0,0);			//insert the ROOT
+	hash_insertion(0,ROOT,ROOT);	//insert the ROOT
 
 	while(arc_label <= 0xFF) 
 	{	
-		position = compute_hash(ROOT_ID,arc_label);
+		position = compute_hash(ROOT,arc_label);
 
-		hash_insertion(position,ROOT_ID,node_id);
+		hash_insertion(position,ROOT,node_id);
 		
 		node_id++;
 
+		//otherwise overflow arc_label
 		if(node_id == 257)		
-			break;			//otherwise overflow arc_label 
+			break;			 
 		else
 			arc_label++;
 	}
-
-	//printf("%"PRIu16"\n",node_id);
-	//printf("%"PRIu8"\n",arc_label);
 }
 
 void build_hash_table() 
@@ -94,10 +94,9 @@ void build_hash_table()
 
 void print_hash_table() 
 {
-
 	int i;
 
-	for(i=0; i < 300; i++)
+	for(i=0; i < DICTIONARY_SIZE; i++)
 	{
 		printf("\nENTRY:%d",i);
 
@@ -145,24 +144,7 @@ void rebuild_hash_table()
 {
 	collision_list_destroy();
 	hash_init();
-	//print_hash_table();
 	generate_root_childs();
-	//print_hash_table();
-}
-void verify_outside_range() {
-	printf("\nVerifica outside range in corso....");
-	int i,j;
-	j=0;
-	for(i=0; i < DICTIONARY_SIZE; i++)
-	{
-		if(hash_table[i] -> index >= DICTIONARY_SIZE){
-			j=1;
-			printf("ERRORE!!");
-		}
-	}
-
-	if(j==0)
-		printf("TUTTO OK!!\n");
 }
 
 uint16_t check_for_free_entry_and_add(uint16_t position, uint16_t parent, uint64_t insertion_place) 
@@ -176,16 +158,12 @@ uint16_t check_for_free_entry_and_add(uint16_t position, uint16_t parent, uint64
 		insert_in_collision_list(hash_table[position],parent);		
 	else
 	{
-		//verify_outside_range();
 		node_id = 0;
 		rebuild_hash_table();
 	}
-		
-
+	
 	return parent;
 }
-
-
 
 uint16_t lookup_collision_list(uint16_t position, uint16_t parent) 
 {	
@@ -204,13 +182,10 @@ uint16_t lookup_collision_list(uint16_t position, uint16_t parent)
 	}
 
 	if(child_id == 0)
-		return check_for_free_entry_and_add(position, parent, COLLISION_LIST);		//insert new symbhol in the collision list of entry pointed by position	
+		return check_for_free_entry_and_add(position, parent, COLLISION_LIST);		//insert new symbhol in the collision list
 
 	return child_id;
 }
-
-
-
 
 uint16_t hash_lookup(uint16_t parent, uint8_t arc_label)
 {
@@ -239,71 +214,78 @@ void hash_table_destroy()
 }
 
 
-int lz78_compressor(const char* inputfilename, const char* outputfilename) {
+int lz78_compressor(const char* inputfilename, const char* outputfilename) 
+{
 
 	struct bit_io* bitio_inputfile;
 	struct bit_io* bitio_outputfile;
 	uint64_t buff = 0;
 	uint8_t arc_label = 0;
+	const uint64_t END_OF_FILE = 0;
 
 	build_hash_table();
 	generate_root_childs();
 
-	//print_hash_table();
 	
 	bitio_inputfile = bitio_open(inputfilename,READ);
 	if(bitio_inputfile == NULL)
-		return BITIO_OPEN_ERROR;
+	{
+		printf( "Error opening %s: %s\n", inputfilename, strerror( errno ) );
+		return -1;
+	}
 
 	bitio_outputfile = bitio_open(outputfilename,WRITE);
 	if(bitio_outputfile == NULL)
-		return BITIO_OPEN_ERROR;
+	{
+		printf( "Error opening %s: %s\n", outputfilename, strerror( errno ) );
+		return -1;
+	}
 
-	parent_node = ROOT_ID;
-	previous_parent_node = ROOT_ID;
+	parent_node = ROOT;
+	previous_parent_node = ROOT;
 
 	while(bitio_read(bitio_inputfile,8,&buff) != -1) 
 	{			
-				//printf("Letto:");
-				//printf("%"PRIu64"\n",buff);
-				arc_label = (uint8_t)buff; 
-
+			arc_label = (uint8_t)buff; 
+			parent_node = hash_lookup(parent_node, arc_label);
+	CHECK:
+			//child has been found
+			if(parent_node != previous_parent_node)										
+				previous_parent_node = parent_node;
+			
+			//New child added so emits
+			else																		
+			{	
+				bitio_write(bitio_outputfile,16,(uint64_t)parent_node);
+				parent_node = ROOT;
+				previous_parent_node = ROOT;
 				parent_node = hash_lookup(parent_node, arc_label);
-		CHECK:
-				if(parent_node != previous_parent_node)										//child has been found
-					previous_parent_node = parent_node;
-				else																		//	new child has been added so we emit
-				{	
-					//printf("Scritto:");
-					//printf("%"PRIu64"\n",(uint64_t)parent_node);
-					if(parent_node >= DICTIONARY_SIZE)
-						printf("WARNING!!!");	
-					//printf("Scritto:");
-					//printf("%"PRIu16"\n",parent_node);
-					bitio_write(bitio_outputfile,16,(uint64_t)parent_node);
-					parent_node = ROOT_ID;
-					previous_parent_node = ROOT_ID;
-					//printf("Letto char:");
-					//printf("%"PRIu8"\n",arc_label);
-					parent_node = hash_lookup(parent_node, arc_label);
-					goto CHECK;
-				}	 
+				goto CHECK;
+			}	 
 	}
 
-	//print_hash_table();
-	const uint64_t END_OF_FILE = 0;
-	bitio_write(bitio_outputfile,16, END_OF_FILE);
-	//printf("%"PRIu64"\n",END_OF_FILE);
+	
+	if(bitio_write(bitio_outputfile,16, END_OF_FILE) == -1)
+	{
+		printf( "Error bitio_write: %s\n", strerror( errno ) );
+		return -1;
+	}
 
 	if(bitio_close(bitio_inputfile) == -1)
-		return BITIO_CLOSE_ERROR;
+	{
+		printf( "Error closing %s: %s\n", inputfilename, strerror( errno ) );
+		return -1;
+	}
 
 	if(bitio_close(bitio_outputfile) == -1)
-		return BITIO_CLOSE_ERROR;
+	{
+		printf( "Error closing %s: %s\n", outputfilename, strerror( errno ) );
+		return -1;
+	}
 
 	hash_table_destroy();
-
 	return 0;
+
 }
 
 /*

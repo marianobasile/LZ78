@@ -1,5 +1,5 @@
 #include "bitio.h"
-#include <inttypes.h>
+#include <inttypes.h>		
 
 struct bit_io
 {
@@ -10,9 +10,13 @@ struct bit_io
 	uint mode;
 };
 
+/* filename: name of the file to open, 
+	mode: 0 READ, 1 WRITE, 
+	return: bit_io object dynamically allocated 
+*/
 struct bit_io * bitio_open(const char* filename, uint mode) 
 {	
-/* filename: name of the file to open, mode: 0 READ, 1 WRITE, return: bit_io object dynamically allocated */
+
 	struct bit_io *b;
 
 	if(filename == NULL || filename[0]=='\0' || mode > 1) 
@@ -43,10 +47,10 @@ struct bit_io * bitio_open(const char* filename, uint mode)
 }
 
 int bitio_close (struct bit_io* b) 
-{/*return: 0 SUCCESS, -1 FAILURE*/
-
+{
 	/*return value of the function */
-	int ret = 0; 
+	int ret = 0;
+
 	if(b == NULL) 
 	{
 		errno = EINVAL;
@@ -69,7 +73,8 @@ int bitio_close (struct bit_io* b)
 int bitio_write(struct bit_io* b, uint size, uint64_t data) 
 {	
 	/* available space in the buffer*/
-	uint space; 
+	uint space;
+
 	if(b == NULL || b->mode != 1 || size > 64) 
 	{
 		errno = EINVAL;
@@ -98,7 +103,6 @@ int bitio_write(struct bit_io* b, uint size, uint64_t data)
 			errno = ENOSPC;
 			return -1;	
 		}
-
 		/*fill the buffer b->data with the the bits which did not fit the first time */
 		b->data = data >> space;	
 		b->wp = size - space;		
@@ -111,6 +115,7 @@ int bitio_read(struct bit_io* b, uint max_size, uint64_t * result)
 {
 	uint space;
 	int ret;
+
 	if(b == NULL || b->mode != 0 || max_size > 64) 
 	{
 		errno = EINVAL;
@@ -141,17 +146,16 @@ int bitio_read(struct bit_io* b, uint max_size, uint64_t * result)
 			return -1;
 		}
 		/* b->wp = # of elements successfully read * 8 since each element is 8 bits long */
-		b->wp = ret * 8; 
-
-		/* shift b->data to left by space position (the quantity already used to fill it) & copy in result */
-	
+		b->wp = ret * 8;
 
 		/* At this point we need to copy the remaining chunk of the data (max_size - space) */
 		/* We may have read from the file less than (max_size - space) bits */
 		if(b->wp >= max_size - space) 
 		{	
+			//Set result to 0
 			*result^=*result;
 
+			/* shift b->data to left by space position (the quantity already used to fill it) & copy in result */
 			*result |= b->data << space;
 
 			*result &= ((1UL << max_size) - 1); 
@@ -160,7 +164,9 @@ int bitio_read(struct bit_io* b, uint max_size, uint64_t * result)
 			return max_size;
 		}
 
+		/* shift b->data to left by space position (the quantity already used to fill it) & copy in result */
 		*result |= b->data << space;
+		
 		/*need to clear extra bits copied in the previous operation (space + b->wp)*/
 		*result &= ((1UL << (b->wp + space)) - 1); 
 		b->rp = b->wp; 
