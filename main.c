@@ -60,6 +60,18 @@ int file_exists (const char * filename)
 	return stat(filename, &filestat);
 }
 
+/*Comparing size of two files*/
+int compare_file_size(const char* original, const char* compressed)
+{
+	struct stat original_stat;
+	stat(original, &original_stat);
+	
+	struct stat compressed_stat;
+	stat(compressed, &compressed_stat);
+	
+	return original_stat.st_size - compressed_stat.st_size;
+}
+
 void check_syntax(struct args* arguments) 
 {
 	if (arguments -> inputfilename == NULL || arguments -> outputfilename == NULL || arguments -> mode == 2)
@@ -69,6 +81,7 @@ void check_syntax(struct args* arguments)
 int main(int argc, char* argv[]){
 
 	int option = 0;
+	int ret;
 
 	struct args* arguments;
 	arguments = (struct args*) calloc(1, sizeof(struct args));
@@ -127,7 +140,20 @@ int main(int argc, char* argv[]){
 			if(lz78_compressor(arguments -> inputfilename, arguments -> outputfilename) != 0)
 				printf("./lz78: Error during compression\n\n");
 			else
-				printf("./lz78: Compression terminated\n\n");	
+			{
+				ret = compare_file_size(arguments -> inputfilename, arguments -> outputfilename);
+				if( ret >0 )
+					printf("./lz78: Compression terminated\n\n");
+				else
+				{
+					printf("./lz78: Compression not usable: compressed file bigger than the origina!\n\n");
+					
+					/*removing the compressed file created*/
+					ret = remove(arguments -> outputfilename);
+					if( ret != 0)
+						printf("\n\nError removing the compressed file: %s\n\n", arguments -> outputfilename);					
+				}
+			}
 		}
 		else
 		{	
