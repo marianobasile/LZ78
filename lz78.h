@@ -199,3 +199,10 @@ int handle_first_citionary_access(struct bit_io * input, struct bit_io * output,
 	=== get_root_child_symbol ===
 */
 uint16_t get_root_child_symbol(struct decompressor_entry* dictionary, uint16_t node);
+
+
+/* 	=== print_dictionary ===
+- utility function to print the dictionary entries: usefull to check the consistence with compressor hash-table!
+	=== print_dictionary ===
+*/
+void print_dictionary( struct decompressor_entry *dictionary);
