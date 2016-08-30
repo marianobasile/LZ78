@@ -98,7 +98,7 @@ int bitio_write(struct bit_io* b, uint size, uint64_t data)
 		//(data&((1UL<<space)-1));
 		//b->data |= (data&((1UL<<space)-1))<< b->wp; 
 		//printf("\nb->data dopo: %"PRIu64, b->data);
-		printf("%"PRIu64"\n",b->data);	
+		//printf("%"PRIu64"\n",b->data);	
 		if(fwrite(&(b->data),1,8,b->f) <= 0 ) 
 		{	
 			errno = ENOSPC;

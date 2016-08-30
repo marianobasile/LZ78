@@ -1,0 +1,90 @@
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+<meta name="description" content="Servizio di registrazione, prenotazione,ricerca e gestione di impianti sportivi polivalenti." >
+<meta name="keywords" content="centro sportivo,sport,benessere,calcio,backet,nuoto,tennis,rugby,atletica,pallavolo,palestra,golf,arti marziali,fitness" >
+<meta name="author" content="Mariano Basile">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>Registrazione SportCentre.</title>
+<link rel="stylesheet" href="welcomechrome.css" type="text/css" media="screen"><script type="text/javascript" src="welcome.js"></script>
+</head>
+<body onload="set();document.register.reset();" onkeyup="aggiorna(event,'r')">
+<div id="intestazione">
+<div id="intesta_1">
+<a href="index.php">
+<img src="pictures/logo.gif" id="websitelogo" alt="Logo del sito">
+</a>
+</div>
+</div>
+<div id="heart">
+<div id="heartsx">
+<p id="descriptionone">SCEGLI L'IMPIANTO SPORTIVO
+PI&Ugrave ADATTO ALLE TUE ESIGENZE PRENOTA E GODITI L'ALLENAMENTO
+</p>
+<ul>
+<li><img src="pictures/hockey.gif" alt="icona hockey" ><p class="loghi">Hockey</p> </li>
+<li><img src="pictures/arti_marziali.gif" alt="icona arti_marziali.gif " ><p class="loghi">Arti Marziali</p> </li>
+<li><img src="pictures/nuoto.gif" alt="icona piscina" ><p class="loghi">Piscina</p> </li>
+<li><img src="pictures/pallavolo.gif" alt="icona volley" ><p class="loghi">Pallavolo</p> </li>
+</ul>
+<ul>
+<li><img src="pictures/calcio.gif" alt="icona calcio" ><p class="loghi">Calcio</p> </li>
+<li><img src="pictures/basket.gif" alt="icona basket" ><p class="loghi">Basket</p> </li>
+<li><img src="pictures/atletica.gif" alt="icona atletica" ><p class="loghi">Atletica</p> </li>
+<li><img src="pictures/rugby.gif" alt="icona rugby" ><p class="loghi">Rugby</p> </li>
+</ul>
+<ul>
+<li><img src="pictures/golf.jpg" alt="icona golf" ><p class="loghi">Golf</p> </li>
+<li><img src="pictures/tennis.gif" alt="icona campo da tennis" ><p class="loghi">Tennis</p> </li>
+<li><img src="pictures/ginnastica.gif" alt="icona ginnastica" ><p class="loghi">Ginnastica</p> </li>
+<li><img src="pictures/palestra.gif" alt="icona fitness" ><p class="loghi">Fitness</p> </li>
+</ul>
+</div>
+<div id="heartdx">
+<form name="register" method="post" action="index.php" onSubmit="return verifica();">
+<p id="descriptiontwo">Seleziona il profilo</p>
+<div id="profile">
+<input type="button" name="user" id="user" value="Utente" onClick="modifica(this.name,0)">
+<input type="button" name="factory" id="factory" value="Azienda" onClick="modifica(this.name,1)">
+<div id="changes">
+<ul>
+<li>
+<p class="chartext" ><label class="etichette" for="nome">Nome</label></p>
+<input type="text" tabindex="1" class="campi" name="nome" id="nome" maxlength="15" size="50" onClick="improve()" onSelect="improve()">
+</li>
+<li>
+<p class="chartext" ><label class="etichette" for="cognome">Cognome</label></p>
+<input type="text" tabindex="2" class="campi" id="cognome"  name="cognome" maxlength="25" size="50" onClick="improve()" onSelect="improve()">
+</li>
+<li>
+<p class="chartext" ><label class="etichette" for="email">Indirizzo e-mail</label></p>
+<input type="text" tabindex="3"  class="campi" id="email" name="email" maxlength="30" size="50" onClick="improve()" onSelect="improve()">
+</li>
+<li>
+<p class="chartext" ><label class="etichette" for="password">Password</label></p>
+<input type="password" tabindex="4" class="campi" id="password" name="password" maxlength="20" size="50" onClick="improve()" onSelect="improve()">
+</li>
+<li>
+<p class="chartext" ><label class="etichette" for="cellulare">Telefono</label></p>
+<input type="text" tabindex="5" class="campi" id="cellulare" name="cellulare" maxlength="10" size="50" onClick="improve()" onSelect="improve()">
+</li>
+<li>
+<p class="chartext"><label class="etichette" for="data_birth_d" >Data di Nascita</label></p>
+<input type="text" tabindex="6"  id="data_birth_d"  name="day" value="Giorno" maxlength="2" size="5" onClick="azzera(this.name,0);improve();" onMouseOut="set()" onFocus="azzera(this.name,0)" onBlur="set()" onSelect="improve()">
+<select name="mese" tabindex="7"  id="data_birth_s" >
+<option value=Gennaio>Gennaio</option><option value=Febbraio>Febbraio</option><option value=Marzo>Marzo</option><option value=Aprile>Aprile</option><option value=Maggio>Maggio</option><option value=Giugno>Giugno</option><option value=Luglio>Luglio</option><option value=Agosto>Agosto</option><option value=Settembre>Settembre</option><option value=Ottobre>Ottobre</option><option value=Novembre>Novembre</option><option value=Dicembre>Dicembre</option></select>
+<input type="text" tabindex="8" id="data_birth_y"  name="year" value="Anno" maxlength="4" size="8" onClick="azzera(this.name,1);improve();" onMouseOut="set()" onFocus="azzera(this.name,1)" onBlur="set()" onSelect="improve()">
+</li>
+</ul>
+</div>
+<p><input type="submit" tabindex="9" id="registra" value="Registrazione"></p>
+</form>
+</div>
+</div>
+<div id="footer">
+<p id="descrfooter"> Sport Centre &copy; 2013 Mariano Basile</p>
+<a id="contatti" href="mailto:basilemariano92@gmail.com">Contatti</a></div>
+</body>
+</html>
+

@@ -376,7 +376,7 @@ int emit_decoding(struct bit_io* output, struct decompressor_entry* dictionary, 
 	{
 		buffer = (uint64_t)decode_buffer[i];
 
-		printf("stampo:");
+		//printf("stampo:");
 		//printf("%"PRIu64"\n",buffer);
 		ret = bitio_write(output, 8, buffer);
 		if(ret != 0)
