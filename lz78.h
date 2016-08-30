@@ -99,11 +99,17 @@ int emit_decoding(struct bit_io* output, struct decompressor_entry* dictionary, 
 
 
 
+/* 	=== ehandle_first_citionary_access===
+-  utility function to read first node emit it and update to the next access to the dicitionary: when a new node has to been added
+	=== emit_decoding ===
+*/
+int handle_first_citionary_access(struct bit_io * input, struct bit_io * output, uint64_t * buffer, uint32_t * node,  struct decompressor_entry *dictionary, char * decode_buffer);
+
+
+
 /* 	=== get_root_child_symbol ===
 - utility function to get the first symbol in an encoded sequence to add to the new node in the tree:
 - raising the tree from the node to emit until the root!
 	=== get_root_child_symbol ===
 */
 uint16_t get_root_child_symbol(struct decompressor_entry* dictionary, uint16_t node);
-
-int flush_out_buffer(struct bit_io* b);

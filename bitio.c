@@ -177,21 +177,3 @@ int bitio_read(struct bit_io* b, uint max_size, uint64_t * result)
 		return b->wp + space;			
 	}
 }
-
-int flush_out_buffer(struct bit_io* b) {
-
-int space;
-	space=64-(b->wp);
-	//printf("devo riempire altri %d\n",space);
-	if(space==64)
-		return 0;//buffer empty
-	else{
-		//i need to flush the buffer
-		int ret=fwrite((void*)&b->data,((b->wp)+7)/8,1,b->f);
-		b->wp=0;
-		b->data^=b->data;
-		if(ret<=0)errno=ENOSPC;
-		return ret;
-	}
-	
-}
