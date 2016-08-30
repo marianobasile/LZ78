@@ -403,6 +403,20 @@ int handle_first_citionary_access(struct bit_io * input, struct bit_io * output,
 }
 
 
+
+void print_dictionary( struct decompressor_entry *dictionary)
+{	
+	uint32_t i;
+	for( i=0; i<counter; i++)
+	{
+		printf("\nENTRY: %"PRIu32, i);
+		printf("\tSYMBOL: %"PRIu8, dictionary[i].symbol);
+		printf("\tSYMBOL: %"PRIu32"\n", dictionary[i].father);	
+	}
+}
+
+
+
 int lz78_decompressor(const char* inputfilename, const char* outputfilename) 
 {
 	int ret;
