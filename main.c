@@ -154,8 +154,7 @@ int main(int argc, char* argv[]){
 				ret = compare_file_size(arguments -> inputfilename, arguments -> outputfilename);
 				if( ret >0 ) 
 				{
-					printf("\n./lz78: Compression terminated:\n");
-					
+					printf("\n./lz78: Compression terminated:\n");	
 				}	
 				else
 				{
@@ -166,8 +165,8 @@ int main(int argc, char* argv[]){
 					if( ret != 0)
 						printf("\n\nError removing the compressed file: %s\n\n", arguments -> outputfilename);					
 				}
-				printf("\n\tORIGINAL SIZE:\t\t %ld KBytes\n", (long int) (print_file_size(arguments -> inputfilename)/1024 ));
-				printf("\tCOMPRESSED SIZE:\t %ld KBytes\n", (long int) (print_file_size(arguments -> outputfilename)/1024 ));
+				printf("\tORIGINAL SIZE:\t\t %ld KBytes\n", print_file_size(arguments -> inputfilename)/1024);
+				printf("\tCOMPRESSED SIZE:\t %ld KBytes\n\n", print_file_size(arguments -> outputfilename)/1024 );
 
 			}
 		}
@@ -180,9 +179,9 @@ int main(int argc, char* argv[]){
 				printf("\n\n./lz78: Error during decompression\n\n");
 			else
 			{			
-				printf("\n./lz78: Decompression terminated:\n\n");
-				printf("\n\tORIGINAL SIZE:\t\t %ld KBytes\n", (long int) (print_file_size(arguments -> inputfilename)/1024 ));
-				printf("\tDECOMPRESSED SIZE:\t %ld KBytes\n", (long int) (print_file_size(arguments -> outputfilename)/1024 ));
+				printf("\n./lz78: Decompression terminated:\n");
+				printf("\tORIGINAL SIZE:\t\t %ld KBytes\n", print_file_size(arguments -> inputfilename)/1024);
+				printf("\tDECOMPRESSED SIZE:\t %ld KBytes\n\n", print_file_size(arguments -> outputfilename)/1024);
 			}	
 		}
 
