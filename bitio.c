@@ -10,10 +10,7 @@ struct bit_io
 	uint mode;
 };
 
-/* filename: name of the file to open, 
-	mode: 0 READ, 1 WRITE, 
-	return: bit_io object dynamically allocated 
-*/
+
 struct bit_io * bitio_open(const char* filename, uint mode) 
 {	
 
