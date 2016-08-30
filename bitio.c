@@ -59,7 +59,8 @@ int bitio_close (struct bit_io* b)
 		if(fwrite(&b->data,1,((b->wp)+7)/8,b->f) != (b->wp+7)/8 )
 			ret = -1;			
 	}	
-	
+
+
 	fclose(b->f);
 	bzero(b,sizeof(*b));
 	free(b);
@@ -92,14 +93,7 @@ int bitio_write(struct bit_io* b, uint size, uint64_t data)
 		b->wp += size;
 	} 
 	else 
-	{	
-		//printf("space: %lu",(1UL<<space)-1);
-		//printf("\ndata: %"PRIu64, ();
-		//printf("\nb->data prima: %"PRIu64, data&((1UL<<space)-1));
-		//(data&((1UL<<space)-1));
-		//b->data |= (data&((1UL<<space)-1))<< b->wp; 
-		//printf("\nb->data dopo: %"PRIu64, b->data);
-		//printf("%"PRIu64"\n",b->data);	
+	{		
 		if(fwrite(&(b->data),1,8,b->f) <= 0 ) 
 		{	
 			errno = ENOSPC;
@@ -156,16 +150,12 @@ int bitio_read(struct bit_io* b, uint max_size, uint64_t * result)
 		/* At this point we need to copy the remaining chunk of the data (max_size - space) */
 		/* We may have read from the file less than (max_size - space) bits */
 		if(b->wp >= max_size - space) 
-		{	//printf("\nLeggo result: %"PRIu64, *result);
+		{	
 			*result^=*result;
-			//printf("\ndopo result: %"PRIu64, *result);
 
-			//printf("\ndopo 2 result: %"PRIu16, (uint16_t)b->data);
 			*result |= b->data << space;
-			//printf("\ndopo 2 result after: %"PRIu64, *result);
-			/*need to clear extra bits copied in the previous operation (max_size)*/
+
 			*result &= ((1UL << max_size) - 1); 
-			//printf("\ndopo 3 result: %"PRIu64, *result);
 
 			b->rp = max_size - space;
 			return max_size;
