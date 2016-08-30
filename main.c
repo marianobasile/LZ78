@@ -4,8 +4,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <inttypes.h>
-#include <sys/time.h>
-#include <time.h>
 #include "lz78.h"
 
 /* Args to run the program */
@@ -93,15 +91,6 @@ int main(int argc, char* argv[]){
 
 	int option = 0;
 	int ret;
-	
-	/*structures to compute timing*/
-	time_t starting_time;
-	struct tm *s_time;
-	struct timeval start;
-	struct timeval stop;
-	time_t ending_time;
-	struct tm *e_time;
-
 
 	struct args* arguments;
 	arguments = (struct args*) calloc(1, sizeof(struct args));
@@ -152,11 +141,6 @@ int main(int argc, char* argv[]){
 
 		/*Syntax check */
 		check_syntax(arguments);
-
-		time(&starting_time);
-		//starting_time = time(NULL);
-		//s_time = localtime(&starting_time);
-		//gettimeofday(&start, NULL);
 		
 		if(arguments -> mode == 0)
 		{
@@ -167,11 +151,6 @@ int main(int argc, char* argv[]){
 				printf("\n\n./lz78: Error during compression\n\n");
 			else
 			{
-				time(&ending_time);
-				//ending_time = time(NULL);
-				//e_time = localtime(&ending_time);
-				//gettimeofday(&stop, NULL);
-				
 				ret = compare_file_size(arguments -> inputfilename, arguments -> outputfilename);
 				if( ret >0 ) 
 				{
@@ -189,8 +168,7 @@ int main(int argc, char* argv[]){
 				}
 				printf("\n\tORIGINAL SIZE:\t\t %ld KBytes\n", (long int) (print_file_size(arguments -> inputfilename)/1024 ));
 				printf("\tCOMPRESSED SIZE:\t %ld KBytes\n", (long int) (print_file_size(arguments -> outputfilename)/1024 ));
-				//printf("\tCOMPRESSION TIME:\t %dm:%ds:%ldms\n",s_time->tm_min - e_time->tm_min, s_time->tm_sec - e_time->tm_sec, stop.tv_usec - start.tv_usec);
-				printf("\tCOMPRESSION TIME: \t %d min: %d sec", ((int)difftime(ending_time,starting_time))/60, ((int)difftime(ending_time,starting_time))%60);
+
 			}
 		}
 		else
@@ -201,17 +179,10 @@ int main(int argc, char* argv[]){
 			if(lz78_decompressor(arguments -> inputfilename, arguments -> outputfilename) != 0)
 				printf("\n\n./lz78: Error during decompression\n\n");
 			else
-			{
-				time(&ending_time);
-				//ending_time = time(NULL);
-				//e_time = localtime(&ending_time);
-				//gettimeofday(&stop, NULL);
-				
+			{			
 				printf("\n./lz78: Decompression terminated:\n\n");
 				printf("\n\tORIGINAL SIZE:\t\t %ld KBytes\n", (long int) (print_file_size(arguments -> inputfilename)/1024 ));
 				printf("\tDECOMPRESSED SIZE:\t %ld KBytes\n", (long int) (print_file_size(arguments -> outputfilename)/1024 ));
-				//printf("\tDECOMPRESSION TIME:\t %dm:%ds:%ldms\n", s_time->tm_min - e_time->tm_min, s_time->tm_sec - e_time->tm_sec, stop.tv_usec - start.tv_usec);
-				printf("\tDECOMPRESSION TIME: \t %d min: %.d sec", ((int)difftime(ending_time,starting_time))/60, ((int)difftime(ending_time,starting_time))%60);
 			}	
 		}
 
