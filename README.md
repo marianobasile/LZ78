@@ -1,5 +1,5 @@
 # LZ78
-DESCRIPTION: An LZ78 tree based compressor.
+DESCRIPTION: An LZ78 tree based compressor for textual files.
 
 # Build
 Make
