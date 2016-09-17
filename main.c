@@ -79,7 +79,7 @@ void check_syntax(struct args* arguments)
 		print_error_and_exit();
 }
 
-off_t print_file_size(const char* filename) 
+long int print_file_size(const char* filename) 
 {
 	struct stat file_stat;
 	stat(filename, &file_stat);
