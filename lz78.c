@@ -229,14 +229,14 @@ int lz78_compressor(const char* inputfilename, const char* outputfilename)
 	bitio_inputfile = bitio_open(inputfilename,READ);
 	if(bitio_inputfile == NULL)
 	{
-		printf( "Error opening %s: %s\n", inputfilename, strerror( errno ) );
+		fprintf(stderr, "Error opening %s: %s\n", inputfilename, strerror( errno ) );
 		return -1;
 	}
 
 	bitio_outputfile = bitio_open(outputfilename,WRITE);
 	if(bitio_outputfile == NULL)
 	{
-		printf( "Error opening %s: %s\n", outputfilename, strerror( errno ) );
+		fprintf(stderr, "Error opening %s: %s\n", outputfilename, strerror( errno ) );
 		return -1;
 	}
 
@@ -266,19 +266,19 @@ int lz78_compressor(const char* inputfilename, const char* outputfilename)
 	
 	if(bitio_write(bitio_outputfile,16, END_OF_FILE) == -1)
 	{
-		printf( "Error bitio_write: %s\n", strerror( errno ) );
+		fprintf(stderr, "Error bitio_write: %s\n", strerror( errno ) );
 		return -1;
 	}
 
 	if(bitio_close(bitio_inputfile) == -1)
 	{
-		printf( "Error closing %s: %s\n", inputfilename, strerror( errno ) );
+		fprintf(stderr, "Error closing %s: %s\n", inputfilename, strerror( errno ) );
 		return -1;
 	}
 
 	if(bitio_close(bitio_outputfile) == -1)
 	{
-		printf( "Error closing %s: %s\n", outputfilename, strerror( errno ) );
+		fprintf(stderr, "Error closing %s: %s\n", outputfilename, strerror( errno ) );
 		return -1;
 	}
 
@@ -361,7 +361,7 @@ int emit_decoding(struct bit_io* output, struct decompressor_entry* dictionary, 
 		ret = bitio_write(output, 8, buffer);
 		if(ret != 0)
 		{
-			printf( "Error bitio_write: %s\n", strerror( errno ) );
+			fprintf(stderr, "Error bitio_write: %s\n", strerror( errno ) );
 			return -1;
 		}
 	}
@@ -392,7 +392,7 @@ int handle_first_citionary_access(struct bit_io * input, struct bit_io * output,
 	ret = bitio_read(input,16, buffer);
 	if(ret < 0)
 	{
-		printf( "Error bitio_read: %s\n", strerror( errno ) );
+		fprintf(stderr, "Error bitio_read: %s\n", strerror( errno ) );
 		return -1;
 	}
 	*node = (uint32_t)*buffer;
@@ -430,7 +430,7 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 	if(decode_buffer == NULL) 
 	{
 		errno = ENOMEM;
-		printf( "Error allocating decoding buffer: %s\n", strerror( errno ) );
+		fprintf(stderr, "Error allocating decoding buffer: %s\n", strerror( errno ) );
 		return -1; 
 	}
 	
@@ -440,7 +440,7 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 	
 	if(dictionary == NULL)
 	{
-		printf( "Error creating the dictionary: %s\n", strerror( errno ) );
+		fprintf(stderr, "Error creating the dictionary: %s\n", strerror( errno ) );
 		return -1;	
 	}
 	
@@ -451,14 +451,14 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 	input = bitio_open(inputfilename, READ);
 	if(input == NULL)
 	{
-		printf( "Error opening %s: %s\n", inputfilename, strerror( errno ) );
+		fprintf(stderr, "Error opening %s: %s\n", inputfilename, strerror( errno ) );
 		return -1;
 	}
 	
 	output = bitio_open(outputfilename, WRITE);
 	if(output == NULL)
 	{
-		printf( "Error opening %s: %s\n", outputfilename, strerror( errno ) );
+		fprintf(stderr, "Error opening %s: %s\n", outputfilename, strerror( errno ) );
 		return -1;
 	}
 
@@ -473,7 +473,7 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 	ret = bitio_read(input, 16, &buffer);
 	if(ret < 0)
 	{
-		printf( "Error bitio_read: %s\n", strerror( errno ) );
+		fprintf(stderr, "Error bitio_read: %s\n", strerror( errno ) );
 		return -1;
 	}
 	current_node = (uint32_t)buffer;
@@ -489,7 +489,7 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 		ret = emit_decoding(output, dictionary, current_node, decode_buffer);
 		if(ret != 0)
 		{
-			printf( "Error decoding : %s\n", strerror( errno ) );
+			fprintf(stderr, "Error decoding : %s\n", strerror( errno ) );
 			return -1;
 		}
 		
@@ -513,7 +513,7 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 
 		if(ret < 0)
 		{
-			printf( "\nError bitio_read: %s\n", strerror( errno ) );
+			fprintf(stderr, "\nError bitio_read: %s\n", strerror( errno ) );
 			return -1;
 		}
 		current_node = (uint32_t)buffer;
@@ -523,14 +523,14 @@ int lz78_decompressor(const char* inputfilename, const char* outputfilename)
 	ret = bitio_close(input);
 	if(ret != 0)
 	{
-		printf( "Error closing %s: %s\n", inputfilename, strerror( errno ) );
+		fprintf(stderr, "Error closing %s: %s\n", inputfilename, strerror( errno ) );
 		return -1;
 	}
 
 	ret = bitio_close(output);
 	if(ret != 0)
 	{
-		printf( "Error closing %s: %s\n", outputfilename, strerror( errno ) );
+		fprintf(stderr, "Error closing %s: %s\n", outputfilename, strerror( errno ) );
 		return -1;
 	}
 	
